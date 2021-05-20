@@ -1,2 +1,2 @@
 # COMP401
-All files belongs to project course COMP401
+All files belong to project course COMP401
