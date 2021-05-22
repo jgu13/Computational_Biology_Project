@@ -1,4 +1,7 @@
-file = "CyTOF_data_melanoma.rds" 
+install.packages("BiocManager")
+BiocManager::install("EBImage")
+library("EBImage")
+file <- file.choose()
 
 data = readRDS(file)
 
