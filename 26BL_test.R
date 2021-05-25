@@ -18,3 +18,4 @@ img.norm = normalize(img0, inputRange = quantile(img0,c(0,0.99)))
 display(img.norm)
 img.select = (img.size>50 & img.mean > 500)
 display(img.norm * img.select)
+
