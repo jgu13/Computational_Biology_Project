@@ -7,16 +7,9 @@ data = readRDS(file)
 sample_list = names(data)
 
 cell_mask <- function(sample, marker){
-  # if(!(sample %in% sample_list)){
-  #   print(sample, "not in sample list.")
-  # }
-  # markers = names(data$sample)
-  # if(!(marker %in% markers)){
-  #   throw(sample, "not in markers of ", sample, " .")
-  # }
   #marker image
   img = getElement(getElement(data,sample),marker)
-  img.norm = EBImage::normalize(img, inputRange = quantile(img, c(0,0.99)))
+  img.norm = normalize(img, inputRange = quantile(img, c(0,0.99)))
   assign("img.norm.blur",gblur(img.norm, sigma = 1),envir=.GlobalEnv)
   
   #cell segentation
@@ -24,7 +17,7 @@ cell_mask <- function(sample, marker){
   
   #cell mask
   #get cells that stand out of the moving background window
-  cmask = thresh(img.norm.blur, w=10, h=10, offset=0.05)
+  cmask = thresh(img.norm.blur, w=15, h=15, offset=0.05)
   #get rid of noises
   cmask = opening(cmask, makeBrush(3, shape='disc'))
   #apply watershed to further segment cells
@@ -59,6 +52,11 @@ cell_contour <- function(sample, marker){
   display(segmented)
 }
 
+l1<-rep(sample_list,each=9)
+l2<-rep(names(getElement(data,"21RD")),times=3)
+mapply(cell_segmentation, l1, l2)
+mapply(cell_contour, l1, l2)
+
 #show cells having mean > 300, size > 30
 # histone.mean = cpp_obj_mean(mseg = cmask, histone)
 # histone.size = cpp_obj_size(mseg = cmask)
@@ -69,5 +67,17 @@ cell_contour <- function(sample, marker){
 # display(histone.norm)
 # histone.select = (histone.size>50 & histone.mean > 500)
 # display(histone.norm * img.select)
-# 
+
+#Batch produce normalized cell image
+get_images <- function(){
+  all <- sapply(sample_list, getElement, data)
+  markers <- names(getElement(data,"21RD"))
+  images_of_one_sample <- sapply(markers, getElement, all) 
+  normalized <- sapply(X=images_of_one_sample,FUN=normalize,inputRange = quantile(img, c(0,0.99)))
+  blurred <- sapply(X=)
+  img = getElement(getElement(data,sample),marker)
+  img.norm = normalize(img, inputRange = quantile(img, c(0,0.99)))
+  assign("img.norm.blur",gblur(img.norm, sigma = 1),envir=.GlobalEnv)
+}
+
 
