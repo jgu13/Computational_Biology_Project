@@ -11,6 +11,9 @@ cell_mask <- function(sample, marker){
   img = getElement(getElement(data,sample),marker)
   img.norm = normalize(img, inputRange = quantile(img, c(0,0.99)))
   assign("img.norm.blur",gblur(img.norm, sigma = 1),envir=.GlobalEnv)
+  path = paste(".\\",sample,"\\",sep="")
+  name = paste(path,sample,"_",marker,".png",sep="")
+  writeImage(img.norm.blur, name, quality=85)
   
   #cell segentation
   cells = rgbImage(green = 1.5*img.norm.blur)
@@ -52,10 +55,12 @@ cell_contour <- function(sample, marker){
   display(segmented)
 }
 
-l1<-rep(sample_list,each=9)
-l2<-rep(names(getElement(data,"21RD")),times=3)
-mapply(cell_segmentation, l1, l2)
-mapply(cell_contour, l1, l2)
+analyze_all = function(){
+  l1<-rep(sample_list,each=9)
+  l2<-rep(names(getElement(data,sample_list[1])),times=3)
+  mapply(cell_segmentation, l1, l2)
+  mapply(cell_contour, l1, l2)
+}
 
 #show cells having mean > 300, size > 30
 # histone.mean = cpp_obj_mean(mseg = cmask, histone)
@@ -69,15 +74,19 @@ mapply(cell_contour, l1, l2)
 # display(histone.norm * img.select)
 
 #Batch produce normalized cell image
-get_images <- function(){
-  all <- sapply(sample_list, getElement, data)
-  markers <- names(getElement(data,"21RD"))
-  images_of_one_sample <- sapply(markers, getElement, all) 
-  normalized <- sapply(X=images_of_one_sample,FUN=normalize,inputRange = quantile(img, c(0,0.99)))
-  blurred <- sapply(X=)
-  img = getElement(getElement(data,sample),marker)
-  img.norm = normalize(img, inputRange = quantile(img, c(0,0.99)))
-  assign("img.norm.blur",gblur(img.norm, sigma = 1),envir=.GlobalEnv)
+all_data_images <- function(){
+  for (i in seq_along(data)){
+    for(j in seq_along(data[[i]])){
+      img = data[[i]][[j]]
+      sample = sample_list[i]
+      marker = names(data[[i]][j])
+      img.norm = normalize(img, inputRange = quantile(img, c(0,0.99)))
+      assign("img.norm.blur",gblur(img.norm, sigma = 1),envir=.GlobalEnv)
+      path = paste(".\\",sample,"\\",sep="")
+      name = paste(path,sample,"_",marker,".png",sep="")
+      writeImage(segmented, name, quality=85)
+    }
+  }
 }
 
 
