@@ -38,52 +38,26 @@ cell_segmentation <- function(sample, marker){
   ctmask = propagate(img.norm.blur, seeds = cmask)
   display(colorLabels(ctmask))
   #paint outline of cell mask on image
+  cells = rgbImage(green = 1.5*img.norm.blur)
   segmented = paintObjects(ctmask, cells, col = "#ff00ff")
+  
+  path = paste(".\\",sample,"\\",sep="")
+  name = paste(path,sample,"_",marker,".png",sep="")
+  writeImage(segmented, name, quality=85)
   display(segmented)
 }
 cell_contour <- function(sample, marker){
-  setting()
   cmask = cell_mask(sample, marker)
   Red = as.Image(cpp_obj_contour(cmask)>0)
   Red = fillHull(Red)
-  Green = normalize(histone,inputRange = c(0,300))
+  Green = img.norm.blur
   segmented = paintObjects(Red, toRGB(Green), col=c("red", "yellow"), opac=c(1, 0), thick=TRUE)
   
+  path = paste(".\\",sample,"\\",sep="")
+  name = paste(path,sample,"_",marker,"_contour",".png",sep="")
+  writeImage(segmented, name, quality=85)
   display(segmented)
 }
-
-# 
-# #histone3 marker image
-# histone = data$`34RD`$`Histone-H3`
-# #hist(CD_8a_cell_surface)
-# display(histone)
-# histone.norm = normalize(histone, inputRange = quantile(histone, c(0,0.99)))
-# #hist(CD4_cell_surface.norm)
-# histone.norm.blur = gblur(histone.norm, sigma = 1)
-# display(histone.norm.blur)
-# 
-# #cell segentation
-# cells = rgbImage(green = 1.5*histone.norm.blur)
-# 
-# #cell mask
-# #get cells that stand out of the moving background window
-# cmask = thresh(histone.norm.blur, w=10, h=10, offset=0.05)
-# #get rid of noises
-# cmask = opening(cmask, makeBrush(3, shape='disc'))
-# #apply watershed to further segment cells
-# cmask = watershed(distmap(cmask), 2)
-# cmask = fillHull(cmask)
-# display(histone.norm.blur)
-# display(bwlabel(cmask))
-# 
-# #segment regions with cpp_contour
-# Red = as.Image(cpp_obj_contour(cmask)>0)
-# Red = fillHull(Red)
-# Green = normalize(histone,inputRange = c(0,300))
-# segmented = paintObjects(Red, toRGB(Green), col=c("red", "yellow"), opac=c(1, 0), thick=TRUE)
-# 
-# display(cells)
-# display(segmented)
 
 #show cells having mean > 300, size > 30
 # histone.mean = cpp_obj_mean(mseg = cmask, histone)
