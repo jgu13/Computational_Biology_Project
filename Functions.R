@@ -80,11 +80,11 @@ all_data_images <- function(){
       img = data[[i]][[j]]
       sample = sample_list[i]
       marker = names(data[[i]][j])
-      img.norm = normalize(img, inputRange = quantile(img, c(0,0.99)))
-      img.norm.blur= gblur(img.norm, sigma = 1)
+      # img.norm = normalize(img, inputRange = quantile(img, c(0,0.99)))
+      # img.norm.blur= gblur(img.norm, sigma = 1)
       path = paste("..\\RawData\\",sample,"\\",sep="")
       name = paste(path,sample,"_",marker,".png",sep="")
-      writeImage(img.norm.blur, name, quality=85)
+      writeImage(img, name)
     }
   }
 }
