@@ -89,5 +89,9 @@ all_data_images <- function(){
   }
 }
 
+# display_alt <- function(var_name){
+#   
+# }
+
 
 

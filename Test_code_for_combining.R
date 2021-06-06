@@ -94,5 +94,49 @@ display(toRGB(CD3_cells))
 watershed(CD20_cells, )
 CD20_Fil <- cpp_obj_size
 
+CD20_dir <- "C:\\Users\\admin\\Documents\\mcgill\\CS_and_Biol\\Comp401\\Cell_seg\\RawData\\21RD\\H3+CD20\\"
+CD20_mask<-readImage(paste(CD20_dir,"H3+CD20Test_ProbabilitiesMask.tiff", sep=""))
+CD20_prob_map <- readImage(paste(CD20_dir,"Probability for CD20.tiff", sep=""))
+CD20_objs <- readImage(paste(CD20_dir, "H3+CD20Test_ProbabilitiesCell_Obj_Image.tiff", sep="")) 
+
+CD3_dir <- "C:\\Users\\admin\\Documents\\mcgill\\CS_and_Biol\\Comp401\\Cell_seg\\RawData\\21RD\\H3+CD3\\"
+CD3_mask<-readImage(paste(CD3_dir,"H3+CD3Test_ProbabilitiesMask.tiff",sep=""))
+CD3_prob_map<-readImage(paste(CD3_dir, "Probability for CD3.tiff", sep=""))
+CD3_objs<-readImage(paste(CD3_dir, "H3+CD3Test_ProbabilitiesCell_Obj_Image.tiff", sep=""))
+
+#Use a masked, parallel probability map for each cell type to get a probability mean for each object
+#mask probability map
+CD20_prob_map <- ifelse(CD20_prob_map > 0.5, CD20_prob_map, 0)
+CD20_prob_map <- CD20_prob_map*CD20_mask
+CD3_prob_map <- ifelse(CD3_prob_map > 0.5, CD3_prob_map, 0)
+CD3_prob_map <- CD3_prob_map*CD3_mask
+
+#get all CD20 objects
+#convert labeled image to objects list
+
+
+#count pixels of every object, while also sum up probability from the probability map
+
+
+#get all CD3 objects
+
+tiff_file <- file.choose()
+img<-EBImage::Image(t(tiff::readTIFF(tiff_file, all = FALSE, info = TRUE, native = FALSE, convert = FALSE, indexed = TRUE, as.is = TRUE)))
+img<-readImage(tiff_file)
+
+file <- file.choose()
+img <- readImage(file)
+display(medianFilter(img, size=3))
+display(img)
+display(medianFilter(img>0.5, size=3))
+display(medianFilter(img>0.5, size=1))
+display(opening(img>0.5,makeBrush(size=3, 'diamond')))
+writeImage(opening(img>0.5,makeBrush(size=3, 'diamond')), "C:\\Users\\admin\\Documents\\mcgill\\CS_and_Biol\\Comp401\\Cell_seg\\RawData\\21RD\\H3+CD20\\CellMask.tiff")
+
+file <- file.choose()
+img <- readImage(file)
+display(opening(img>0.5,makeBrush(size=3, 'diamond')))
+writeImage(opening(img>0.5,makeBrush(size=3, 'diamond')), "C:\\Users\\admin\\Documents\\mcgill\\CS_and_Biol\\Comp401\\Cell_seg\\RawData\\21RD\\H3+CD3\\CellMask.tiff")
+
 
 
