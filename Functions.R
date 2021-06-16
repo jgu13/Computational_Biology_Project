@@ -1,6 +1,7 @@
 library(EBImage)
 if(!require(Rcpp)){install.packages("Rcpp")}
 Rcpp::sourceCpp("img_utils.cpp")
+Rcpp::sourceCpp("ConsensusCellMask.cpp")
 
 file = "..\\CyTOF_data_melanoma.rds"
 data = readRDS(file)
@@ -89,9 +90,19 @@ all_data_images <- function(){
   }
 }
 
-# display_alt <- function(var_name){
-#   
-# }
+Combine_two_masks <- function(seg_mapA, prob_mapA, seg_mapB, prob_mapB){
+  #get the consensus color-labeled map
+  colorMat <- cpp_segmentation_merge(seg_mapA, prob_mapA, seg_mapB, prob_map)
+  #convert the result to a colored image
+  colorMat <- ifelse(1, "red", "green")
+  RESImg <- image(coloredMat)
+  display(coloredMat)
+}
+
+
+
+
+
 
 
 

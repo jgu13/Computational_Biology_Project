@@ -142,3 +142,4 @@ IntegerMatrix cpp_obj_contour(SEXP mseg, int neisize = 8){
   return(res);
 }
 
+
