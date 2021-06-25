@@ -1,5 +1,12 @@
 library(EBImage)
-if(!require(Rcpp)){install.packages("Rcpp")}
+if(require(Rcpp)){install.packages("Rcpp")}
+library(reticulate)
+Sys.setenv(RETICULATE_MINICONDA_PATH="E:/Users/admin/miniconda/condabin/conda.bat")
+conda_python(envname='r-reticulate',conda='E:/Users/admin/miniconda/condabin/conda.bat')
+use_condaenv(condaenv='r-reticulate',required=TRUE)
+np <- import("numpy")
+plt <- import("matplotlib.pyplot")
+mpimg <- import ("matplotlib.image")
 Rcpp::sourceCpp("img_utils.cpp")
 Rcpp::sourceCpp("ConsensusCellMask.cpp")
 
@@ -90,6 +97,42 @@ all_data_images <- function(){
   }
 }
 
+#store all marker images with marker colored red, DNA colored blue
+all_colored_DNA <- function(){
+  for (i in seq_along(data)){
+    DNA = data[[i]]$`Histone-H3`
+    DNA = normalize(DNA, inputRange = quantile(DNA, c(0,0.99)))
+    for(j in seq_along(data[[i]])){
+      img = data[[i]][[j]]
+      sample = sample_list[i]
+      marker = names(data[[i]][j])
+      img.norm = normalize(img, inputRange = quantile(img, c(0,0.99)))
+      #img.norm.blur= gblur(img.norm, sigma = 1)
+      path = paste("..\\RawData\\",sample,"\\Colored\\",sep="")
+      name = paste(path,sample,"_",marker,"Colored.tiff",sep="")
+      writeImage(rgbImage(red = img.norm, blue = DNA), name)
+    }
+  }
+}
+
+#store all marker images with marker colored red, DNA colored blue
+all_colored_DNA_reversed <- function(){
+  for (i in seq_along(data)){
+    DNA = data[[i]]$`Histone-H3`
+    DNA = normalize(DNA, inputRange = quantile(DNA, c(0,0.99)))
+    for(j in seq_along(data[[i]])){
+      img = data[[i]][[j]]
+      sample = sample_list[i]
+      marker = names(data[[i]][j])
+      img.norm = normalize(img, inputRange = quantile(img, c(0,0.99)))
+      #img.norm.blur= gblur(img.norm, sigma = 1)
+      path = paste("..\\RawData\\",sample,"\\Colored\\",sep="")
+      name = paste(path,sample,"_",marker,"Colored_reversed.tiff",sep="")
+      writeImage(rgbImage(red = DNA, blue = img.norm), name)
+    }
+  }
+}
+
 Combine_two_masks <- function(seg_mapA, prob_mapA, seg_mapB, prob_mapB){
   #get the consensus color-labeled map
   colorMat <- cpp_segmentation_merge(seg_mapA, prob_mapA, seg_mapB, prob_map)
@@ -99,10 +142,46 @@ Combine_two_masks <- function(seg_mapA, prob_mapA, seg_mapB, prob_mapB){
   display(coloredMat)
 }
 
+save_and_show <- function(var_name, file_name){
+  f_name = paste("./",file_name,".png",sep="")
+  writeImage(var_name,f_name)
+  img = mpimg$imread(f_name)
+  plt$imshow(img)
+  plt$show()
+}
 
+#(1-CD31)*Histone
 
+CD31 <- data$`21RD`$CD31
+CD3 <- normalize(data$`21RD`$CD3, inputRange = quantile(data$`21RD`$CD3, c(0,0.99))) 
+CD20 <- normalize(data$`21RD`$CD20, inputRange = quantile(data$`21RD`$CD20, c(0,0.99))) 
 
+Histone <- normalize(data$`21RD`$`Histone-H3`, inputRange = quantile(data$`21RD`$`Histone-H3`, c(0,0.99)))
+Histone <- Histone*(1-CD31)
 
+Cropped_cells = Image(CD31[1:260,1:200])
+save_and_show(Cropped_cells,"Cropped_Cells")
+Cropped_DNA = Image(Histone[1:260,1:200])
+save_and_show(Cropped_DNA, "Cropped_DNA")
 
-
+# f = makeBrush(3,shape='diamond')
+# f = f / sum(f)
+# offset = 0.03
+MultDNA <- gblur(Cropped_DNA, sigma=5)
+# MultDNA_bg <- filter2(MultDNA, f)
+# MultDNA <- MultDNA > MultDNA_bg + offset
+MultDNA <- thresh(MultDNA,w=10,h=10, offset=0.05)
+MultDNA <- opening(MultDNA, kern=makeBrush(1,shape=('diamond')))
+MultDNA <- watershed(distmap(MultDNA), tolerance = 1, ext=1)
+save_and_show(MultDNA)
+CellMask <- gblur(Cropped_cells, sigma=1.3488)
+f = makeBrush(11,shape='disc')
+f = f / sum(f)
+CellMask <- filter2(CellMask, f)
+CellMask <- opening(CD31,makeBrush(5,shape='disc'))
+Cells <- propagate(CD31, seeds=MultDNA, mask=CellMask)
+img <- rgbImage(green = Histone, blue = CD31)
+Cells <- paintObjects(Cells, img, col='#ff00ff')
+Cells <- paintObjects(MultDNA, Cells, col='#ffff00')
+save_and_show(Cells)
 

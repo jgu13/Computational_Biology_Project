@@ -1,8 +1,14 @@
 library(EBImage)
 library(reticulate)
+Sys.setenv(RETICULATE_MINICONDA_PATH="E:/Users/admin/miniconda/condabin/conda.bat")
+use_condaenv(condaenv='r-reticulate',required=TRUE)
+#another way to use a 32 bit python
+#conda_python(envname='r-reticulate',conda='E:/Users/admin/miniconda/condabin/conda.bat')
 np <- import("numpy")
+plt <- import("matplotlib.pyplot")
+mpimg <- import ("matplotlib.image")
+Rcpp::sourceCpp("img_utils.cpp")
 Rcpp::sourceCpp("ConsensusCellMask.cpp")
-source_python("ConsensusCellMask.py")
 
 # seg_mapA_file <- "E:\\Users\\admin\\Documents\\mcgill\\CS_and_Biol\\Comp401\\Cell_seg\\RawData\\21RD\\TestWithIllumination\\CD20\\Cell_Object_Image.npy"
 # seg_matA <- np$load(seg_mapA_file)
