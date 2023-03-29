@@ -1,2 +1,1 @@
-# COMP401
-All files for project course COMP401
+# Single-cell segmentation and classification using ilastik and Cell porfiler
